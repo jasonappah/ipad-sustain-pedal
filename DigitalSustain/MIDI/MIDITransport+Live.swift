@@ -27,16 +27,34 @@ private final class LiveMIDITransport {
   static let shared = LiveMIDITransport()
 
   private let session = MIDINetworkSession.default()
+  private let client: MIDIClientRef
+  private let outputPort: MIDIPortRef
+  private let initializationError: MIDITransportError?
 
-  private init() {}
+  private init() {
+    var newClient = MIDIClientRef()
+    let clientResult = MIDIClientCreate("Digital Sustain" as CFString, nil, nil, &newClient)
+    client = newClient
+
+    guard clientResult == noErr else {
+      outputPort = 0
+      initializationError = .sendFailed(clientResult)
+      return
+    }
+
+    var newOutputPort = MIDIPortRef()
+    let portResult = MIDIOutputPortCreate(newClient, "Digital Sustain Output" as CFString, &newOutputPort)
+    outputPort = newOutputPort
+    initializationError = portResult == noErr ? nil : .sendFailed(portResult)
+  }
 
   func prepare() -> MIDITransportStatus {
     session.isEnabled = true
     session.connectionPolicy = .anyone
 
     let sessionName = session.networkName
-    guard session.sourceEndpoint() != 0 else {
-      return .unavailable(message: "MIDI source is unavailable")
+    guard initializationError == nil, outputPort != 0, session.destinationEndpoint() != 0 else {
+      return .unavailable(message: "MIDI output is unavailable")
     }
 
     return session.connections().isEmpty
@@ -45,7 +63,7 @@ private final class LiveMIDITransport {
   }
 
   func sendSustain(isDown: Bool) throws {
-    guard session.isEnabled, session.sourceEndpoint() != 0 else {
+    guard initializationError == nil, session.isEnabled, outputPort != 0, session.destinationEndpoint() != 0 else {
       throw MIDITransportError.unavailable
     }
 
@@ -63,7 +81,7 @@ private final class LiveMIDITransport {
       )
     }
 
-    let result = MIDIReceivedEventList(session.sourceEndpoint(), &eventList)
+    let result = MIDISendEventList(outputPort, session.destinationEndpoint(), &eventList)
     guard result == noErr else {
       throw MIDITransportError.sendFailed(result)
     }

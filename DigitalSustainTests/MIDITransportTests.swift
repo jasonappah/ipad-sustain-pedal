@@ -9,4 +9,9 @@ final class MIDITransportTests: XCTestCase {
   func testSustainOffUsesChannelOneController64Value0() {
     XCTAssertEqual(MIDITransport.sustainMessage(isDown: false), 0x20B04000)
   }
+
+  func testBluetoothPacketUsesCC64WithBLETimestamp() {
+    XCTAssertEqual(MIDITransport.bluetoothPacket(isDown: true, timestamp: 0x123), Data([0x82, 0xA3, 0xB0, 64, 127]))
+    XCTAssertEqual(MIDITransport.bluetoothPacket(isDown: false, timestamp: 0x123), Data([0x82, 0xA3, 0xB0, 64, 0]))
+  }
 }

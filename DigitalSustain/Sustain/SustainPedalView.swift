@@ -7,36 +7,34 @@ struct SustainPedalView: View {
   @Environment(\.scenePhase) private var scenePhase
 
   var body: some View {
-    WithViewStore(store, observe: { $0 }) { viewStore in
-      GeometryReader { proxy in
-        ZStack(alignment: .top) {
-          pedalSurface(isPressed: viewStore.isPressed)
-            .frame(width: proxy.size.width, height: proxy.size.height)
+    GeometryReader { proxy in
+      ZStack(alignment: .top) {
+        pedalSurface(isPressed: store.isPressed)
+          .frame(width: proxy.size.width, height: proxy.size.height)
 
-          status(viewStore.transportStatus)
-            .padding(.top, 20)
-            .padding(.horizontal, 24)
-            .allowsHitTesting(false)
-        }
-        .contentShape(Rectangle())
-        .gesture(
-          DragGesture(minimumDistance: 0)
-            .onChanged { _ in viewStore.send(.pedalPressed) }
-            .onEnded { _ in viewStore.send(.pedalReleased) }
-        )
+        status(store.transportStatus)
+          .padding(.top, 20)
+          .padding(.horizontal, 24)
+          .allowsHitTesting(false)
       }
-      .ignoresSafeArea()
-      .onAppear { viewStore.send(.task) }
-      .onChange(of: scenePhase) { _, phase in viewStore.send(.scenePhaseChanged(phase)) }
-      .onChange(of: viewStore.feedback) { _, feedback in playFeedback(feedback) }
-      .onDisappear { viewStore.send(.pedalReleased) }
-      .accessibilityElement(children: .ignore)
-      .accessibilityLabel("Sustain Pedal")
-      .accessibilityValue(viewStore.isPressed ? "Down" : "Up")
-      .accessibilityAddTraits(.isButton)
-      .accessibilityAction(named: "Press Sustain") { viewStore.send(.pedalPressed) }
-      .accessibilityAction(named: "Release Sustain") { viewStore.send(.pedalReleased) }
+      .contentShape(Rectangle())
+      .gesture(
+        DragGesture(minimumDistance: 0)
+          .onChanged { _ in store.send(.pedalPressed) }
+          .onEnded { _ in store.send(.pedalReleased) }
+      )
     }
+    .ignoresSafeArea()
+    .onAppear { store.send(.task) }
+    .onChange(of: scenePhase) { _, phase in store.send(.scenePhaseChanged(phase)) }
+    .onChange(of: store.feedback) { _, feedback in playFeedback(feedback) }
+    .onDisappear { store.send(.pedalReleased) }
+    .accessibilityElement(children: .ignore)
+    .accessibilityLabel("Sustain Pedal")
+    .accessibilityValue(store.isPressed ? "Down" : "Up")
+    .accessibilityAddTraits(.isButton)
+    .accessibilityAction(named: "Press Sustain") { store.send(.pedalPressed) }
+    .accessibilityAction(named: "Release Sustain") { store.send(.pedalReleased) }
   }
 
   private func pedalSurface(isPressed: Bool) -> some View {

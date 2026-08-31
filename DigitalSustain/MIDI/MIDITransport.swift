@@ -38,6 +38,9 @@ enum MIDITransportError: Error, Equatable, Sendable {
 struct MIDITransport: Sendable {
   var prepare: @Sendable () async -> MIDITransportStatus
   var sendSustain: @Sendable (Bool) async throws -> Void
+  var statusUpdates: @Sendable () async -> AsyncStream<MIDITransportStatus> = {
+    AsyncStream { $0.finish() }
+  }
 }
 
 extension MIDITransport: DependencyKey {

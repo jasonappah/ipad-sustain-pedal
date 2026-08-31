@@ -5,6 +5,32 @@ import XCTest
 
 @MainActor
 final class SustainFeatureTests: XCTestCase {
+  func testStatusStreamUpdatesReadyToConnectedAfterPairing() async {
+    let updates = AsyncStream<MIDITransportStatus>.makeStream()
+    let store = TestStore(initialState: SustainFeature.State()) {
+      SustainFeature()
+    } withDependencies: {
+      $0.midiTransport = MIDITransport(
+        prepare: { .ready(sessionName: "iPad") },
+        sendSustain: { _ in },
+        statusUpdates: { updates.stream }
+      )
+    }
+
+    await store.send(.task)
+    await store.receive(.transportPrepared(.ready(sessionName: "iPad"))) {
+      $0.transportStatus = .ready(sessionName: "iPad")
+    }
+
+    updates.continuation.yield(.connected(sessionName: "iPad"))
+    await store.receive(.transportPrepared(.connected(sessionName: "iPad"))) {
+      $0.transportStatus = .connected(sessionName: "iPad")
+    }
+
+    updates.continuation.finish()
+    await store.finish()
+  }
+
   func testPressThenReleaseSendsStandardPedalSequence() async {
     let events = MIDIEvents()
     let store = TestStore(initialState: readyState) {

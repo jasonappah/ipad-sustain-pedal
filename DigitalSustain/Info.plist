@@ -26,6 +26,8 @@
   <array>
     <string>_apple-midi._udp</string>
   </array>
+  <key>NSBluetoothAlwaysUsageDescription</key>
+  <string>Digital Sustain uses Bluetooth to appear as a wireless MIDI sustain pedal on your Mac.</string>
   <key>NSLocalNetworkUsageDescription</key>
   <string>Digital Sustain uses your local network to send MIDI sustain messages to your paired Mac.</string>
   <key>UILaunchScreen</key>

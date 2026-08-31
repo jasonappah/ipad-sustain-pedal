@@ -2,6 +2,7 @@ import ComposableArchitecture
 import SwiftUI
 
 struct SustainFeature: Reducer {
+  @ObservableState
   struct State: Equatable {
     var isPressed = false
     var transportStatus: MIDITransportStatus = .preparing
@@ -32,13 +33,25 @@ struct SustainFeature: Reducer {
 
   @Dependency(\.midiTransport) var midiTransport
 
+  private enum CancelID {
+    case statusUpdates
+  }
+
   func reduce(into state: inout State, action: Action) -> Effect<Action> {
     switch action {
     case .task:
       state.transportStatus = .preparing
-      return .run { [midiTransport] send in
-        await send(.transportPrepared(await midiTransport.prepare()))
-      }
+      return .merge(
+        .run { [midiTransport] send in
+          await send(.transportPrepared(await midiTransport.prepare()))
+        },
+        .run { [midiTransport] send in
+          for await status in await midiTransport.statusUpdates() {
+            await send(.transportPrepared(status))
+          }
+        }
+        .cancellable(id: CancelID.statusUpdates, cancelInFlight: true)
+      )
 
     case let .transportPrepared(status):
       state.transportStatus = status
@@ -67,11 +80,11 @@ struct SustainFeature: Reducer {
       state.pendingMIDICommands.removeFirst()
       return sendNextMIDICommand(into: &state)
 
-    case let .midiFailed(isDown, _):
+    case let .midiFailed(isDown, error):
       guard state.pendingMIDICommands.first == isDown else { return .none }
       state.pendingMIDICommands.removeFirst()
       state.isPressed = false
-      state.transportStatus = .failed(message: "MIDI send failed")
+      state.transportStatus = .failed(message: "MIDI send failed: \(error)")
       state.feedback = .error
 
       // A failed press can still have reached the receiver. Put one release

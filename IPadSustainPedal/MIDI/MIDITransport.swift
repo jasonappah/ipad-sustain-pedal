@@ -28,6 +28,11 @@ enum MIDITransportStatus: Equatable, Sendable {
       message
     }
   }
+
+  var opensTransportSettings: Bool {
+    guard case let .unavailable(message) = self else { return false }
+    return message == "No MIDI transport enabled — open Settings"
+  }
 }
 
 enum MIDITransportError: Error, Equatable, Sendable {

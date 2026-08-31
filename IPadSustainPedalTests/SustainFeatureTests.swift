@@ -1,4 +1,4 @@
-@testable import DigitalSustain
+@testable import IPadSustainPedal
 import ComposableArchitecture
 import SwiftUI
 import XCTest
@@ -98,6 +98,22 @@ final class SustainFeatureTests: XCTestCase {
     XCTAssertEqual(values, [false])
   }
 
+  func testActiveSceneRepreparesTransportAfterSettingsChange() async {
+    let store = TestStore(initialState: SustainFeature.State(transportStatus: .unavailable(message: "No MIDI transport enabled — open Settings"))) {
+      SustainFeature()
+    } withDependencies: {
+      $0.midiTransport = MIDITransport(
+        prepare: { .ready(sessionName: "Enabled: Bluetooth MIDI") },
+        sendSustain: { _ in }
+      )
+    }
+
+    await store.send(.scenePhaseChanged(.active))
+    await store.receive(.transportPrepared(.ready(sessionName: "Enabled: Bluetooth MIDI"))) {
+      $0.transportStatus = .ready(sessionName: "Enabled: Bluetooth MIDI")
+    }
+  }
+
   func testUnavailablePedalDoesNotLatchDown() async {
     let store = TestStore(initialState: SustainFeature.State(transportStatus: .unavailable(message: "MIDI unavailable"))) {
       SustainFeature()
@@ -130,7 +146,7 @@ final class SustainFeatureTests: XCTestCase {
     }
     await store.receive(.midiFailed(true, .unavailable)) {
       $0.isPressed = false
-      $0.transportStatus = .failed(message: "MIDI send failed")
+      $0.transportStatus = .failed(message: "MIDI send failed: unavailable")
       $0.feedback = .error
       $0.pendingMIDICommands = [false]
       $0.isSendingMIDI = true

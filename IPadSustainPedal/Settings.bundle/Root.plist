@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>PreferenceSpecifiers</key>
+  <array>
+    <dict>
+      <key>Type</key>
+      <string>PSGroupSpecifier</string>
+      <key>Title</key>
+      <string>MIDI Transports</string>
+      <key>FooterText</key>
+      <string>Choose how iPad Sustain Pedal may send CC 64. The app reflects changes when it becomes active again.</string>
+    </dict>
+    <dict>
+      <key>Type</key>
+      <string>PSToggleSwitchSpecifier</string>
+      <key>Title</key>
+      <string>Network MIDI</string>
+      <key>Key</key>
+      <string>networkMIDIEnabled</string>
+      <key>DefaultValue</key>
+      <true/>
+    </dict>
+    <dict>
+      <key>Type</key>
+      <string>PSToggleSwitchSpecifier</string>
+      <key>Title</key>
+      <string>Bluetooth MIDI</string>
+      <key>Key</key>
+      <string>bluetoothMIDIEnabled</string>
+      <key>DefaultValue</key>
+      <true/>
+    </dict>
+    <dict>
+      <key>Type</key>
+      <string>PSToggleSwitchSpecifier</string>
+      <key>Title</key>
+      <string>USB MIDI</string>
+      <key>Key</key>
+      <string>usbMIDIEnabled</string>
+      <key>DefaultValue</key>
+      <true/>
+    </dict>
+    <dict>
+      <key>Type</key>
+      <string>PSGroupSpecifier</string>
+      <key>Title</key>
+      <string>Source</string>
+      <key>FooterText</key>
+      <string>github.com/jasonappah/ipad-sustain-pedal</string>
+    </dict>
+  </array>
+</dict>
+</plist>

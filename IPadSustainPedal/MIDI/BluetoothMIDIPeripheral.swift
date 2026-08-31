@@ -15,6 +15,7 @@ final class BluetoothMIDIPeripheral: NSObject, @preconcurrency CBPeripheralManag
   private var characteristic: CBMutableCharacteristic?
   private var subscribedCentrals: Set<UUID> = []
   private var hasPublishedService = false
+  private var isEnabled = true
   private(set) var statusLabel = "Bluetooth MIDI preparing"
 
   var canSend: Bool { !subscribedCentrals.isEmpty }
@@ -22,6 +23,19 @@ final class BluetoothMIDIPeripheral: NSObject, @preconcurrency CBPeripheralManag
   override init() {
     super.init()
     manager = CBPeripheralManager(delegate: self, queue: .main)
+  }
+
+  func setEnabled(_ enabled: Bool) {
+    guard isEnabled != enabled else { return }
+    isEnabled = enabled
+
+    if enabled {
+      publishServiceIfNeeded()
+    } else {
+      manager.stopAdvertising()
+      subscribedCentrals.removeAll()
+      updateStatus("Bluetooth MIDI disabled")
+    }
   }
 
   func sendSustain(isDown: Bool) throws {
@@ -35,6 +49,11 @@ final class BluetoothMIDIPeripheral: NSObject, @preconcurrency CBPeripheralManag
   }
 
   func peripheralManagerDidUpdateState(_ peripheral: CBPeripheralManager) {
+    guard isEnabled else {
+      updateStatus("Bluetooth MIDI disabled")
+      return
+    }
+
     switch peripheral.state {
     case .poweredOn:
       publishServiceIfNeeded()
@@ -52,18 +71,26 @@ final class BluetoothMIDIPeripheral: NSObject, @preconcurrency CBPeripheralManag
   }
 
   func peripheralManager(_ peripheral: CBPeripheralManager, didAdd service: CBService, error: Error?) {
+    guard isEnabled else { return }
     guard error == nil else {
       updateStatus("Bluetooth MIDI is unavailable")
       return
     }
     peripheral.startAdvertising([
-      CBAdvertisementDataLocalNameKey: "Digital Sustain",
+      CBAdvertisementDataLocalNameKey: "iPad Sustain Pedal",
       CBAdvertisementDataServiceUUIDsKey: [BluetoothMIDIProfile.service],
     ])
   }
 
   func peripheralManagerDidStartAdvertising(_ peripheral: CBPeripheralManager, error: Error?) {
-    updateStatus(error == nil ? "Bluetooth MIDI advertising" : "Bluetooth MIDI is unavailable")
+    guard isEnabled else {
+      updateStatus("Bluetooth MIDI disabled")
+      return
+    }
+
+    updateStatus(
+      error == nil ? "Bluetooth MIDI advertising" : "Bluetooth MIDI is unavailable"
+    )
   }
 
   func peripheralManager(_ peripheral: CBPeripheralManager, central: CBCentral, didSubscribeTo characteristic: CBCharacteristic) {
@@ -79,9 +106,11 @@ final class BluetoothMIDIPeripheral: NSObject, @preconcurrency CBPeripheralManag
   func peripheralManagerIsReady(toUpdateSubscribers peripheral: CBPeripheralManager) {}
 
   private func publishServiceIfNeeded() {
+    guard isEnabled else { return }
+
     guard !hasPublishedService else {
       manager.startAdvertising([
-        CBAdvertisementDataLocalNameKey: "Digital Sustain",
+        CBAdvertisementDataLocalNameKey: "iPad Sustain Pedal",
         CBAdvertisementDataServiceUUIDsKey: [BluetoothMIDIProfile.service],
       ])
       return

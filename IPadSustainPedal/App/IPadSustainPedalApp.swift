@@ -2,7 +2,7 @@ import SwiftUI
 import ComposableArchitecture
 
 @main
-struct DigitalSustainApp: App {
+struct IPadSustainPedalApp: App {
   private let store = Store(initialState: SustainFeature.State()) {
     SustainFeature()
   }

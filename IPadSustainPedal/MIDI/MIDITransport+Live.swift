@@ -53,7 +53,7 @@ private final class LiveMIDITransport {
 
   private init() {
     var newClient = MIDIClientRef()
-    let clientResult = MIDIClientCreate("Digital Sustain" as CFString, nil, nil, &newClient)
+    let clientResult = MIDIClientCreate("iPad Sustain Pedal" as CFString, nil, nil, &newClient)
     client = newClient
 
     guard clientResult == noErr else {
@@ -64,13 +64,13 @@ private final class LiveMIDITransport {
     }
 
     var newOutputPort = MIDIPortRef()
-    _ = MIDIOutputPortCreate(newClient, "Digital Sustain Output" as CFString, &newOutputPort)
+    _ = MIDIOutputPortCreate(newClient, "iPad Sustain Pedal Output" as CFString, &newOutputPort)
     outputPort = newOutputPort
 
     var newUSBSource = MIDIEndpointRef()
     _ = MIDISourceCreateWithProtocol(
       newClient,
-      "Digital Sustain USB" as CFString,
+      "iPad Sustain Pedal USB" as CFString,
       ._1_0,
       &newUSBSource
     )
@@ -93,16 +93,17 @@ private final class LiveMIDITransport {
   }
 
   func prepare() -> MIDITransportStatus {
-    session.isEnabled = true
-    session.connectionPolicy = .anyone
-
-    guard clientInitializationError == nil, usbSource != 0 || networkOutputIsAvailable else {
-      return .unavailable(message: "MIDI output is unavailable")
+    let configuration = MIDITransportConfiguration()
+    bluetooth.setEnabled(configuration.bluetoothMIDIEnabled)
+    session.isEnabled = configuration.networkMIDIEnabled
+    if configuration.networkMIDIEnabled {
+      session.connectionPolicy = .anyone
     }
     return currentStatus()
   }
 
   func sendSustain(isDown: Bool) throws {
+    let configuration = MIDITransportConfiguration()
     var didSend = false
     var lastError: MIDITransportError?
 
@@ -120,11 +121,8 @@ private final class LiveMIDITransport {
       )
     }
 
-    if usbSource != 0 {
+    if configuration.usbMIDIEnabled, usbSource != 0 {
       let result = MIDIReceivedEventList(usbSource, &eventList)
-#if DEBUG
-      print("Digital Sustain USB send result: \(result)")
-#endif
       if result == noErr {
         didSend = true
       } else {
@@ -132,22 +130,16 @@ private final class LiveMIDITransport {
       }
     }
 
-    if bluetooth.canSend {
+    if configuration.bluetoothMIDIEnabled, bluetooth.canSend {
       do {
         try bluetooth.sendSustain(isDown: isDown)
-#if DEBUG
-        print("Digital Sustain Bluetooth send result: success")
-#endif
         didSend = true
       } catch let error as MIDITransportError {
-#if DEBUG
-        print("Digital Sustain Bluetooth send error: \(error)")
-#endif
         lastError = error
       }
     }
 
-    if networkOutputIsAvailable, !session.connections().isEmpty {
+    if configuration.networkMIDIEnabled, networkOutputIsAvailable, !session.connections().isEmpty {
       let result = MIDISendEventList(outputPort, session.destinationEndpoint(), &eventList)
       if result == noErr {
         didSend = true
@@ -173,14 +165,27 @@ private final class LiveMIDITransport {
   }
 
   private func currentStatus() -> MIDITransportStatus {
-    guard clientInitializationError == nil, usbSource != 0 || networkOutputIsAvailable else {
-      return .unavailable(message: "MIDI output is unavailable")
+    let configuration = MIDITransportConfiguration()
+    guard configuration.hasEnabledTransport else {
+      return .unavailable(message: "No MIDI transport enabled — open Settings")
     }
 
-    let name = "\(session.networkName) • USB MIDI ready • \(bluetooth.statusLabel)"
-    return session.connections().isEmpty && !bluetooth.canSend
-      ? .ready(sessionName: name)
-      : .connected(sessionName: name)
+    let enabled = configuration.enabledTransportNames.joined(separator: ", ")
+    let details = [
+      configuration.usbMIDIEnabled ? "USB MIDI \(usbSource == 0 ? "unavailable" : "enabled")" : nil,
+      configuration.bluetoothMIDIEnabled ? bluetooth.statusLabel : nil,
+      configuration.networkMIDIEnabled ? session.networkName : nil,
+    ]
+    .compactMap { $0 }
+    .joined(separator: " • ")
+    let name = "Enabled: \(enabled) • \(details)"
+
+    let hasConnectedPeer =
+      (configuration.networkMIDIEnabled && !session.connections().isEmpty)
+      || (configuration.bluetoothMIDIEnabled && bluetooth.canSend)
+    return hasConnectedPeer
+      ? .connected(sessionName: name)
+      : .ready(sessionName: name)
   }
 
   private var networkOutputIsAvailable: Bool {

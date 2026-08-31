@@ -72,7 +72,11 @@ struct SustainFeature: Reducer {
       return release(&state)
 
     case let .scenePhaseChanged(phase):
-      guard phase != .active else { return .none }
+      if phase == .active {
+        return .run { [midiTransport] send in
+          await send(.transportPrepared(await midiTransport.prepare()))
+        }
+      }
       return release(&state, feedback: .none)
 
     case let .midiDelivered(isDown):

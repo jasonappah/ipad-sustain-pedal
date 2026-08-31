@@ -5,27 +5,34 @@ import UIKit
 struct SustainPedalView: View {
   let store: StoreOf<SustainFeature>
   @Environment(\.scenePhase) private var scenePhase
+  @AppStorage(MIDITransportPreferences.hasSeenSettingsHintKey) private var hasSeenSettingsHint = false
+  @State private var isShowingSettingsHint = false
 
   var body: some View {
     GeometryReader { proxy in
       ZStack(alignment: .top) {
         pedalSurface(isPressed: store.isPressed)
           .frame(width: proxy.size.width, height: proxy.size.height)
+          .contentShape(Rectangle())
+          .gesture(
+            DragGesture(minimumDistance: 0)
+              .onChanged { _ in store.send(.pedalPressed) }
+              .onEnded { _ in store.send(.pedalReleased) }
+          )
 
         status(store.transportStatus)
           .padding(.top, 20)
           .padding(.horizontal, 24)
-          .allowsHitTesting(false)
       }
-      .contentShape(Rectangle())
-      .gesture(
-        DragGesture(minimumDistance: 0)
-          .onChanged { _ in store.send(.pedalPressed) }
-          .onEnded { _ in store.send(.pedalReleased) }
-      )
     }
     .ignoresSafeArea()
-    .onAppear { store.send(.task) }
+    .onAppear {
+      store.send(.task)
+      if !hasSeenSettingsHint {
+        hasSeenSettingsHint = true
+        isShowingSettingsHint = true
+      }
+    }
     .onChange(of: scenePhase) { _, phase in store.send(.scenePhaseChanged(phase)) }
     .onChange(of: store.feedback) { _, feedback in playFeedback(feedback) }
     .onDisappear { store.send(.pedalReleased) }
@@ -35,6 +42,12 @@ struct SustainPedalView: View {
     .accessibilityAddTraits(.isButton)
     .accessibilityAction(named: "Press Sustain") { store.send(.pedalPressed) }
     .accessibilityAction(named: "Release Sustain") { store.send(.pedalReleased) }
+    .alert("Choose your MIDI transports", isPresented: $isShowingSettingsHint) {
+      Button("Open Settings") { openSettings() }
+      Button("Not Now", role: .cancel) {}
+    } message: {
+      Text("Enable or disable Network MIDI, Bluetooth MIDI, and USB MIDI in the Settings app whenever you want.")
+    }
   }
 
   private func pedalSurface(isPressed: Bool) -> some View {
@@ -60,14 +73,33 @@ struct SustainPedalView: View {
       }
   }
 
+  @ViewBuilder
   private func status(_ transportStatus: MIDITransportStatus) -> some View {
-    Text(transportStatus.label)
+    if transportStatus.opensTransportSettings {
+      Button(action: openSettings) {
+        statusLabel(transportStatus.label, showsSettingsHint: true)
+      }
+      .buttonStyle(.plain)
+      .accessibilityLabel("MIDI status: (transportStatus.label). Open Settings")
+      .accessibilityHint("Opens this app's Settings page to enable a MIDI transport")
+    } else {
+      statusLabel(transportStatus.label, showsSettingsHint: false)
+        .allowsHitTesting(false)
+    }
+  }
+
+  private func statusLabel(_ text: String, showsSettingsHint: Bool) -> some View {
+    HStack(spacing: 6) {
+      Text(text)
+      if showsSettingsHint {
+        Image(systemName: "gearshape")
+      }
+    }
       .font(.footnote.weight(.bold))
       .foregroundStyle(.white.opacity(0.92))
       .padding(.horizontal, 14)
       .padding(.vertical, 8)
       .background(.black.opacity(0.35), in: Capsule())
-      .accessibilityLabel("MIDI status: \(transportStatus.label)")
   }
 
   private func playFeedback(_ feedback: SustainFeature.PedalFeedback) {
@@ -81,5 +113,10 @@ struct SustainPedalView: View {
     case .error:
       UINotificationFeedbackGenerator().notificationOccurred(.error)
     }
+  }
+
+  private func openSettings() {
+    guard let settingsURL = URL(string: UIApplication.openSettingsURLString) else { return }
+    UIApplication.shared.open(settingsURL)
   }
 }

@@ -5,7 +5,7 @@
   <key>CFBundleDevelopmentRegion</key>
   <string>$(DEVELOPMENT_LANGUAGE)</string>
   <key>CFBundleDisplayName</key>
-  <string>Digital Sustain</string>
+  <string>iPad Sustain Pedal</string>
   <key>CFBundleExecutable</key>
   <string>$(EXECUTABLE_NAME)</string>
   <key>CFBundleIdentifier</key>
@@ -27,9 +27,9 @@
     <string>_apple-midi._udp</string>
   </array>
   <key>NSBluetoothAlwaysUsageDescription</key>
-  <string>Digital Sustain uses Bluetooth to appear as a wireless MIDI sustain pedal on your Mac.</string>
+  <string>iPad Sustain Pedal uses Bluetooth to appear as a wireless MIDI sustain pedal on your Mac.</string>
   <key>NSLocalNetworkUsageDescription</key>
-  <string>Digital Sustain uses your local network to send MIDI sustain messages to your paired Mac.</string>
+  <string>iPad Sustain Pedal uses your local network to send MIDI sustain messages to your paired Mac.</string>
   <key>UILaunchScreen</key>
   <dict/>
   <key>UISupportedInterfaceOrientations~ipad</key>

@@ -100,7 +100,7 @@ flowchart TB
 - **Goal:** Create a signable iPadOS SwiftUI project with TCA and the required privacy metadata.
 - **Requirements:** R1, R4.
 - **Dependencies:** None.
-- **Files:** `DigitalSustain.xcodeproj/project.pbxproj`, `DigitalSustain/App/DigitalSustainApp.swift`, `DigitalSustain/Info.plist`, `DigitalSustain/Assets.xcassets`.
+- **Files:** `IPadSustainPedal.xcodeproj/project.pbxproj`, `IPadSustainPedal/App/IPadSustainPedalApp.swift`, `IPadSustainPedal/Info.plist`, `IPadSustainPedal/Assets.xcassets`.
 - **Approach:** Target iPadOS 17, landscape and portrait, add the Composable Architecture through Swift Package Manager, and declare `NSLocalNetworkUsageDescription` plus the `_apple-midi._udp` Bonjour service in privacy metadata.
 - **Test scenarios:** Build the app for an iPad simulator; verify the app launches to the pedal screen.
 - **Verification:** Xcode reports a clean iPad build and the simulator has a full-screen root view.
@@ -110,7 +110,7 @@ flowchart TB
 - **Goal:** Encapsulate network-session lifecycle, connection status, and standard sustain on/off emission behind an injectable dependency.
 - **Requirements:** R2, R4, R5, R6.
 - **Dependencies:** U1.
-- **Files:** `DigitalSustain/MIDI/MIDIClient.swift`, `DigitalSustain/MIDI/MIDIClient+Live.swift`, `DigitalSustainTests/MIDIClientTests.swift`.
+- **Files:** `IPadSustainPedal/MIDI/MIDIClient.swift`, `IPadSustainPedal/MIDI/MIDIClient+Live.swift`, `IPadSustainPedalTests/MIDIClientTests.swift`.
 - **Approach:** Enable `MIDINetworkSession`, set the trusted-LAN connection policy, display the system-provided advertised name, observe its connection state, and publish MIDI 1.0 channel-one CC 64 packets by calling `MIDIReceivedEventList` on its source endpoint. Treat a nonzero `OSStatus` and a denied local-network permission as unavailable or failed state.
 - **Execution note:** Use a mock dependency for reducer tests; the hardware API is proven by the device smoke test.
 - **Test scenarios:** A request to send sustain-on builds CC 64 value 127; a request to send sustain-off builds CC 64 value 0; unavailable transport reports failure; a nonzero emission result becomes failed state; the displayed name comes from the system session rather than a mutable app setting.
@@ -121,7 +121,7 @@ flowchart TB
 - **Goal:** Make the only meaningful interaction a large, responsive, accessible pedal surface.
 - **Requirements:** R1, R3, R5, R6.
 - **Dependencies:** U2.
-- **Files:** `DigitalSustain/Sustain/SustainFeature.swift`, `DigitalSustain/Sustain/SustainPedalView.swift`, `DigitalSustainTests/SustainFeatureTests.swift`.
+- **Files:** `IPadSustainPedal/Sustain/SustainFeature.swift`, `IPadSustainPedal/Sustain/SustainPedalView.swift`, `IPadSustainPedalTests/SustainFeatureTests.swift`.
 - **Approach:** Send press, release, and cancellation actions from a full-screen SwiftUI control; let the reducer own visual and transport state and make release idempotent. The pedal owns every non-status pixel inside the safe area; status overlays at the top edge without becoming a competing touch target in either orientation. A send failure returns the visual pedal to up, gives an error haptic only when supported, and shows a non-blocking failure state until a later successful preparation or press restores readiness. Press and release use differentiated, supported-device haptics; forced cancellation is silent. Expose one accessible button named "Sustain Pedal" with an "Up" or "Down" value, and announce status changes without moving VoiceOver focus.
 - **Test scenarios:** Covers AE1. Touch-down on a ready pedal sets pressed state, requests sustain-on, and produces the down feedback. Covers AE2. Touch-up, cancellation, and inactive scene each yield at most one sustain-off. A press while unavailable does not visually latch down and exposes failure. A send failure clears the pressed state. Both orientations leave the entire non-status safe area as the pedal target. Accessibility exposes the button role, name, and current up/down value.
 - **Verification:** Reducer tests pass and simulator interaction visibly changes pedal state.

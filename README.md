@@ -1,6 +1,6 @@
-# Digital Sustain
+# iPad Sustain Pedal
 
-Digital Sustain turns my iPad into a large, hold-to-engage MIDI sustain pedal for a Mac. It sends MIDI channel 1 CC 64: 127 while held, then 0 when released.
+iPad Sustain Pedal turns an iPad into a large, hold-to-engage MIDI sustain pedal for a Mac. It sends MIDI channel 1 CC 64: 127 while held, then 0 when released.
 
 https://github.com/user-attachments/assets/9432ef78-3735-4767-9851-20f544226b06
 
@@ -18,24 +18,28 @@ https://github.com/user-attachments/assets/9432ef78-3735-4767-9851-20f544226b06
 
 Choose one transport in your music app. Enabling more than one sends duplicate CC 64 events.
 
+### Choose transports
+
+Open **Settings > Apps > iPad Sustain Pedal** to enable or disable Network MIDI, Bluetooth MIDI, and USB MIDI independently. Changes apply when you return to the app; the pedal shows the enabled transports in its status. If they are all off, it shows a clear warning instead of latching the pedal.
+
 ### USB (Inter-Device Audio and MIDI)
 
 1. Connect the iPad to the Mac with USB.
 2. In **Audio MIDI Setup → Audio Devices**, select the iPad and click **Enable** to enter Inter-Device Audio and MIDI mode.
-3. In the music app, enable the **Digital Sustain USB** MIDI source.
+3. In the music app, enable the **iPad Sustain Pedal USB** MIDI source.
 
 ### Bluetooth LE MIDI
 
-1. Launch Digital Sustain and allow its Bluetooth permission.
+1. Launch iPad Sustain Pedal and allow its Bluetooth permission.
 2. On the Mac, choose **Audio MIDI Setup → MIDI Studio → Configure Bluetooth**.
-3. Connect to **Digital Sustain**, then enable that MIDI source in the music app.
+3. Connect to **iPad Sustain Pedal**, then enable that MIDI source in the music app.
 
 ### Network MIDI
 
-1. Put the iPad and Mac on the same trusted local network and launch Digital Sustain. Allow the local-network prompt.
+1. Put the iPad and Mac on the same trusted local network and launch iPad Sustain Pedal. Allow the local-network prompt.
 2. In **Audio MIDI Setup → MIDI Studio → Network**, enable a Mac session and connect to the iPad session named in the app status pill.
 3. Enable that network MIDI source in the music app.
 
 ## Physical-device check
 
-Connect the iPad by USB, select it as the Xcode run destination, choose a signing team if Xcode asks, and run the `DigitalSustain` scheme. Then follow one connection path above and verify CC 64 values with a MIDI monitor or your host application.
+Connect the iPad by USB, select it as the Xcode run destination, choose a signing team if Xcode asks, and run the `IPadSustainPedal` scheme. Then follow one connection path above and verify CC 64 values with a MIDI monitor or your host application.

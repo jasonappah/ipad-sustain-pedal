@@ -4,7 +4,7 @@ Digital Sustain turns my iPad into a large, hold-to-engage MIDI sustain pedal fo
 
 https://github.com/user-attachments/assets/9432ef78-3735-4767-9851-20f544226b06
 
-<p float="left" style="display: flex; align-items: flex-start; gap: 10px;">
+<p float="left" style="display: flex; align-items: flex-start;">
 <img width="472" height="328" alt="A screenshot of the app with showing a prompt directing users to the settings page" src="https://github.com/user-attachments/assets/0093cb86-3f47-4404-9bb7-e5da60a189f8" />
 <img width="472" height="328" alt="A screenshot of the Settings UI" src="https://github.com/user-attachments/assets/5f9fa869-258d-4e28-bcab-36baddd6e74a" />
 <img width="472" height="328" alt="A screenshot of the pedal in unpressed state" src="https://github.com/user-attachments/assets/72dfe4ba-cc63-4b6d-b7fc-58fec557d9ef" />

@@ -2,7 +2,7 @@
 
 Digital Sustain turns my iPad into a large, hold-to-engage MIDI sustain pedal for a Mac. It sends MIDI channel 1 CC 64: 127 while held, then 0 when released.
 
-> This is a fully vibe-coded project, built with Codex. I've been away from home for a couple months, and I bought a MIDI controller so I can still play keys a little bit, but I didn't buy a sustain pedal. I am doing exactly what you think I'm doing with this app. sorry if that was a visual you didn't want :p
+> This is a fully vibe-coded project, built with Codex. I've been away from home for a couple months, and I bought a used MIDI controller so I can still play keys a little bit, but I didn't buy a sustain pedal. I am doing exactly what you think I'm doing with this app. sorry if that was a visual you didn't want :p. Spiritual successor to [this thing](https://github.com/jasonappah/blink-sustain-pedal) which technically worked, but was so high latency that it was practically useless and also just functionally annoying to use 
 
 ## Connect it to your Mac
 

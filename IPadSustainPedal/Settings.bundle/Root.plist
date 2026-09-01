@@ -46,6 +46,24 @@
       <key>Type</key>
       <string>PSGroupSpecifier</string>
       <key>Title</key>
+      <string>Diagnostics</string>
+      <key>FooterText</key>
+      <string>Shows the current contact count and the latest touch event. Full details are also available in the device console.</string>
+    </dict>
+    <dict>
+      <key>Type</key>
+      <string>PSToggleSwitchSpecifier</string>
+      <key>Title</key>
+      <string>Show Touch Diagnostics</string>
+      <key>Key</key>
+      <string>showTouchDiagnostics</string>
+      <key>DefaultValue</key>
+      <false/>
+    </dict>
+    <dict>
+      <key>Type</key>
+      <string>PSGroupSpecifier</string>
+      <key>Title</key>
       <string>Source</string>
       <key>FooterText</key>
       <string>github.com/jasonappah/ipad-sustain-pedal</string>

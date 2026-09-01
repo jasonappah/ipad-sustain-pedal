@@ -40,6 +40,7 @@ enum MIDITransportPreferences {
   static let bluetoothMIDIKey = "bluetoothMIDIEnabled"
   static let usbMIDIKey = "usbMIDIEnabled"
   static let hasSeenSettingsHintKey = "hasSeenTransportSettingsHint"
+  static let showTouchDiagnosticsKey = "showTouchDiagnostics"
 }
 
 private extension UserDefaults {

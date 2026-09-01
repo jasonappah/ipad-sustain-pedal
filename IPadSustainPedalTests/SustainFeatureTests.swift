@@ -5,6 +5,35 @@ import XCTest
 
 @MainActor
 final class SustainFeatureTests: XCTestCase {
+  func testTouchContactTrackerStaysDownUntilTheLastContactEndsOrIsCancelled() {
+    var tracker = TouchContactTracker()
+    let firstContact = NSObject()
+    let secondContact = NSObject()
+
+    XCTAssertTrue(tracker.begin([firstContact]))
+    XCTAssertEqual(tracker.activeContactCount, 1)
+    XCTAssertFalse(tracker.begin([secondContact]))
+    XCTAssertEqual(tracker.activeContactCount, 2)
+
+    XCTAssertFalse(tracker.end([firstContact]))
+    XCTAssertEqual(tracker.activeContactCount, 1)
+    XCTAssertTrue(tracker.cancel([secondContact]))
+    XCTAssertEqual(tracker.activeContactCount, 0)
+  }
+
+  func testTouchContactTrackerResetReleasesAnActiveContactOnlyOnce() {
+    var tracker = TouchContactTracker()
+    let contact = NSObject()
+    let nextContact = NSObject()
+
+    XCTAssertTrue(tracker.begin([contact]))
+    XCTAssertTrue(tracker.reset())
+    XCTAssertEqual(tracker.activeContactCount, 0)
+    XCTAssertFalse(tracker.reset())
+    XCTAssertTrue(tracker.begin([nextContact]))
+    XCTAssertEqual(tracker.activeContactCount, 1)
+  }
+
   func testStatusStreamUpdatesReadyToConnectedAfterPairing() async {
     let updates = AsyncStream<MIDITransportStatus>.makeStream()
     let store = TestStore(initialState: SustainFeature.State()) {
